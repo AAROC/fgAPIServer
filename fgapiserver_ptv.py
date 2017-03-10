@@ -216,7 +216,8 @@ def checktoken():
                 "Users",
                 "Developers"
             ],
-            "subject": "a9f37548-4024-4330-88bf-4f43067e6bdb"
+            # "subject": "a9f37548-4024-4330-88bf-4f43067e6bdb"
+            "subject": "98e3009e-e39b-11e6-bcba-5eef910c8578"
         }
         ctk_status = 200
     else:

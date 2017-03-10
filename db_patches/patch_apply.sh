@@ -37,7 +37,7 @@ local_exec() {
 }
 
 get_dbver() {
-  DBVER=$(asdb_cmd "select max(version) from db_patches;" 2>/dev/null)
+  DBVER=$(asdb_cmd "select version from db_patches order by id desc limit 1;" 2>/dev/null)
   if [ "$DBVER" = "" ]; then
     DBVER=$DEFAULTDBVER
   fi
@@ -53,10 +53,11 @@ get_dbver() {
 DBVER=$(get_dbver)
 out "Current DB version: $DBVER"
 # Build the list of patches to apply
+DBVERVAL=$(echo $DBVER | awk -F'.' '{ print 1000000*$1+1000*$2+$3 }')
 DBPATCHES=$(/bin/ls -1 *.sh |\
             grep -E '[0-9]+\.sh' |\
             awk -F'_' '{ print $2 }' |\
-            awk -F'.sh' -v ver=$DBVER '{ if($1 > ver) print $1}')
+            awk -F'.' -v dbverval=$DBVERVAL '{ if(1000000*$1+1000*$2+$3 > dbverval) print $1"."$2"."$3}')
 out "Selected patch versions: '"$(echo $DBPATCHES | sed s/\ /,\ /g)"'"
 # Apply selected patches
 COUNT=0
@@ -68,11 +69,13 @@ do
   local_exec "./patch_${ver}.sh" > ./patch_${ver}.log
   # Verify patch
   DBVER=$(get_dbver)
-  if [ "$DBVER" != "$ver" ]; then
+  DBVERVAL=$(echo $DBVER | awk -F'.' '{ print 1000000*$1+1000*$2+$3 }')
+  PCVERVAL=$(echo $ver | awk -F'.' '{ print 1000000*$1+1000*$2+$3 }')
+  if [ "$DBVERVAL" != "$PCVERVAL" ]; then
     err "An error occurred while applying patch $ver"
-	err "Exiting"
-	STOPPED=1
-	break
+    err "Exiting"
+    STOPPED=1
+    break
   else
     COUNT=$((COUNT+1))
     DBVER=$ver

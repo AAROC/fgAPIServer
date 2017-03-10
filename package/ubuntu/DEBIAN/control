@@ -1,0 +1,11 @@
+Source: fgapiserver
+Section: misc
+Priority: optional
+Maintainer: Marco Fargetta <marco.fargetta@ct.infn.it>
+Version: 0.0.6-b
+Homepage: https://www.gitbook.com/book/indigo-dc/futuregateway/details 
+Package: fgapiserver
+Architecture: all
+Depends: apache2, libapache2-mod-wsgi, python-flask, python-flask-login, python-pycryptopp, python-mysql.connector 
+Description: REST API frontend for the FutureGateway
+ Implement the REST API communicating with user user applications

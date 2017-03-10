@@ -2,6 +2,12 @@
 #
 # Database patch functions
 #
+export ASDB_USER=fgapiserver
+export ASDB_PASS=fgapiserver_password
+export ASDB_HOST=localhost
+export ASDB_PORT=3306
+export ASDB_NAME=fgapiserver
+
 
 ts() {
   date +%Y%m%d%H%M%S
@@ -19,15 +25,27 @@ err() {
 
 asdb_file() {
   SQLFILE=$1
+  SQLOUT=$2
+  SQLERR=$3
+  if [ "$SQLOUT" = "" ]; then
+    SQLOUTCMD=""
+  else
+    SQLOUTCMD="1>$SQLOUT"
+  fi
+  if [ "$SQLERR" = "" ]; then
+    SQLERRCMD=""
+  else
+    SQLERRCMD="2>$SQLERR"
+  fi
   if [ "$SQLFILE" != "" -a -f $SQLFILE ]; then
-    mysql -h localhost -P 3306 -u fgapiserver -pfgapiserver_password fgapiserver < $SQLFILE
+    mysql -h $ASDB_HOST -P $ASDB_PORT -u $ASDB_USER -p$ASDB_PASS $ASDB_NAME < $SQLFILE $SQLOUTCMD $SQLOUTERR
   fi
 }
 
 asdb_cmd() {
   SQLCMD=$1
   if [ "$SQLCMD" != "" ]; then
-    mysql -h localhost -P 3306 -u fgapiserver -pfgapiserver_password fgapiserver -s -N -e "$SQLCMD"
+    mysql -h $ASDB_HOST -P $ASDB_PORT -u $ASDB_USER -p$ASDB_PASS $ASDB_NAME  -s -N -e "$SQLCMD"
   fi
 }
 
@@ -55,7 +73,7 @@ get_dbver() {
 check_patch() {
   VER=$1
   VERCHK=$(asdb_cmd "select count(*) from db_patches where version=\"$VER\"")
-  if [ "$VERCHK" != "" -a $VERCHK -ne 0 ]; then
+  if [ "$FORCE_PATCH" != "" -a "$VERCHK" != "" -a $VERCHK -ne 0 ]; then
     out "Patch $VER already applied"
     exit 1
   else

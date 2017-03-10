@@ -4,7 +4,7 @@
 # Author: Riccardo Bruno (riccardo.bruno@ct.infn.it)
 #
 Demo application executing TOSCA IDC  
-TOSCA IDC interface test, bypasses the JSAGA adaptor contating directyl the TOSCA endpoint
+TOSCA IDC interface test, bypasses the JSAGA adaptor contating directly the TOSCA endpoint
 TOSCA template file tosca_template.yaml, has been taken from official templates repository from: https://raw.githubusercontent.com/indigo-dc/tosca-templates/master/amber/ambertools.yaml
 
 To execute the demo, please follow the steps below(*):
@@ -20,5 +20,5 @@ The "gestatus" value equal to "triggered" informs that the daemon is now in char
 (*) CURL_AUTH variable contains authirization token. It could be empty or contain:
 
     session token: CURL_AUTH="-H \"Authorization: $STOKEN\""  
-    PVT token    : CURL_AUTH="-H \"Authorization: Bearer $TOKEN\""
+    PTV token    : CURL_AUTH="-H \"Authorization: Bearer $TOKEN\""
 

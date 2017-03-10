@@ -1,6 +1,8 @@
+setuptools
+packaging
+pyOpenSSL
 flask
 flask-login
-pyMySQL
+MySQL-python
 pycrypto
-mysql-python
 requests

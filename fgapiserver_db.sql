@@ -43,6 +43,9 @@ create table application (
    ,primary key(id)
 );
 
+set session sql_mode='NO_AUTO_VALUE_ON_ZERO';
+insert into application (id,name,description,outcome,creation,enabled)
+values (0,"infrastructures","unassigned infrastructure","INFRA",now(), false);
 insert into application (id,name,description,outcome,creation,enabled)
 values (1,"hostname","hostname tester application","JOB",now(),true);
 insert into application (id,name,description,outcome,creation,enabled)
@@ -110,7 +113,11 @@ create table infrastructure_parameter (
    ,pvalue       varchar(256) not null -- Parameter value
    ,pdesc        varchar(1024)         -- App. parameter description as in specs.
    ,primary key(infra_id,param_id)
-   ,foreign key(infra_id) references infrastructure(id)
+   -- There is no foreign key infrastructure.id for infra_id
+   -- since it causes problems while removing records in
+   -- infrastructure table. The key gets a violation even
+   -- other records is the infrastructure table exist having
+   -- the same infrastructure.id value
 );
 
 -- Infra for helloworld app@csgfsdk
@@ -273,7 +280,8 @@ create table fg_group (
 -- Groups baseline values
 insert into fg_group (id,name,creation,modified) values (1,'administrator',now(),now()); -- Can do anything
 insert into fg_group (id,name,creation,modified) values (2,'test',now(),now());          -- Can do tests only
-insert into fg_group (id,name,creation,modified) values (3,'generic user',now(),now());  -- Restricted user (view only)
+insert into fg_group (id,name,creation,modified) values (3,'users',now(),now());         -- Restricted user (view only)
+insert into fg_group (id,name,creation,modified) values (4,'developers',now(),now());    -- Restricted user (view only)
 
 --  Roles table, different actions can be done by users and groups
 create table fg_role (
@@ -346,8 +354,12 @@ insert into fg_group_role (group_id,role_id,creation) values (2,13, now()); -- T
 insert into fg_group_role (group_id,role_id,creation) values (2,14, now()); -- Test can manage userdata on tasks
 insert into fg_group_role (group_id,role_id,creation) values (2,22, now()); -- Test can change the status of a task
 
--- Generic user roles
-insert into fg_group_role (group_id,role_id,creation) values (3, 4, now()); -- GenericUser can view applications
+-- users roles
+insert into fg_group_role (group_id,role_id,creation) values (3, 4, now()); -- User group can view applications
+
+-- Developers roles (grant all privileges like administrator)
+insert into fg_group_role (group_id,role_id,creation)
+select 4,id,now() from fg_role;
 
 -- Associate applications to Groups
 create table fg_group_apps (
@@ -362,6 +374,9 @@ insert into fg_group_apps (group_id, app_id, creation)
 select 1,id,now() from application;                                        -- Administrator access to all appications
 insert into fg_group_apps (group_id, app_id, creation) values (2,1,now()); -- Test access to hostname
 insert into fg_group_apps (group_id, app_id, creation) values (2,2,now()); -- Test access to helloworld
+insert into fg_group_apps (group_id, app_id, creation)
+select 4,id,now() from application;                                        -- Developers access to all appications
+
 
 -- AccessTokens
 -- Any API call needs an access token which uniquelly authorized and identifies the issuer
@@ -445,5 +460,5 @@ create table db_patches (
 );
 
 -- Default value for baseline setup (this script)
-insert into db_patches (id,version,name,file,applied) values (1,'0.0.9','baseline setup','../fgapiserver_db.sql',now());
+insert into db_patches (id,version,name,file,applied) values (1,'0.0.10','baseline setup','../fgapiserver_db.sql',now());
 

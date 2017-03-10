@@ -1,0 +1,5 @@
+/var/www/FutureGateway/fgapiserver.conf
+/var/www/FutureGateway/fgapiserver_log.conf
+/var/www/FutureGateway/fgapiserver_ptvmap.json
+/etc/apache2/sites-available/futuregateway-ssl.conf
+/etc/apache2/sites-available/futuregateway.conf
