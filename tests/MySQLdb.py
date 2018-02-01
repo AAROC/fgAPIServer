@@ -268,8 +268,8 @@ queries = [
                '                           ,enabled\n'
                '                           ,vinfra\n'
                '                           )\n'
-               'select if(max(id) is NULL,1,max(id)+1) \n'
-               '      ,0\n'
+               'select if(max(id) is NULL,1,max(id)+1)\n'
+               '      ,%s\n'
                '      ,%s\n'
                '      ,%s\n'
                '      ,now()\n'
@@ -575,7 +575,7 @@ queries = [
                '      ,%s                              -- outcome\n'
                '      ,now()                           -- creation\n'
                '      ,%s                              -- enabled\n'
-               'from application;\n'),
+               'from application;'),
      'result': []},
     {'query': ('insert into application_parameter (app_id\n'
                '                                  ,param_id\n'
@@ -597,11 +597,11 @@ queries = [
                '                            ,file\n'
                '                            ,path\n'
                '                            ,override)\n'
-               'select %s                                          \n'
-               '      ,if(max(file_id) is NULL,1,max(file_id)+1)   \n'
-               '      ,%s                                          \n'
-               '      ,''                                          \n'
-               '      ,TRUE                                        \n'
+               'select %s\n'
+               '      ,if(max(file_id) is NULL,1,max(file_id)+1)\n'
+               '      ,%s\n'
+               '      ,\'\'\n'
+               '      ,TRUE\n'
                'from application_file\n'
                'where app_id=%s'),
      'result': []},
@@ -635,6 +635,23 @@ queries = [
                 '       ,%s    \n'
                 '       ,%s);'),
      'result': None},
+    {'query':  ('insert into infrastructure (id\n'
+                '                           ,app_id\n'
+                '                           ,name\n'
+                '                           ,description\n'
+                '                           ,creation\n'
+                '                           ,enabled\n'
+                '                           ,vinfra\n'
+                '                           )\n'
+                'select if(max(id) is NULL,1,max(id)+1)\n'
+                '      ,0\n'
+                '      ,%s\n'
+                '      ,%s\n'
+                '      ,now()\n'
+                '      ,%s\n'
+                '      ,%s\n'
+                'from infrastructure;'),
+     'result': None},
     {'query': ('select count(*)\n'
                'from application_file\n'
                'where app_id = %s\n'
@@ -656,6 +673,148 @@ queries = [
                '  and app_id = %s\n'
                ';'),
      'result': [[1], ]},
+    {'query': ('select id\n'
+               'from task\n'
+               'where status != "PURGED"\n'
+               '  and user = %s\n'
+               ';'),
+     'result': [[1], ]},
+    {'query': 'select name from fg_user where id = %s;',
+     'result': [['test_user', ], ]},
+    {'query': ('insert into as_queue (\n'
+               '   task_id\n'
+               '  ,target_id\n'
+               '  ,target\n'
+               '  ,action\n'
+               '  ,status\n'
+               '  ,target_status\n'
+               '  ,creation\n'
+               '  ,last_change\n'
+               '  ,check_ts\n'
+               '  ,action_info\n'
+               ') select %s,\n'
+               '         NULL,\n'
+               '         (select target\n'
+               '          from as_queue\n'
+               '          where task_id=%s\n'
+               '          order by task_id asc\n'
+               '          limit 1),\n'
+               '         \'CLEAN\',\n'
+               '         \'QUEUED\',\n'
+               '         (select status\n'
+               '          from as_queue\n'
+               '          where task_id=%s\n'
+               '          order by task_id asc\n'
+               '          limit 1),\n'
+               '         now(),\n'
+               '         now(),\n'
+               '         now(),\n'
+               '         %s;'),
+     'result': None},
+    {'query': ('update infrastructure set\n'
+               '    name=%s,\n'
+               '    description=%s,\n'
+               '    enabled=%s,\n'
+               '    vinfra=%s\n'
+               'where id=%s;'),
+     'result': None},
+    {'query': ('insert into infrastructure_parameter\n'
+               '    (infra_id,\n'
+               '     param_id,\n'
+               '     pname,\n'
+               '     pvalue,\n'
+               '     pdesc)\n'
+               '    select %s,\n'
+               '           if(max(param_id) is NULL,\n'
+               '              1,max(param_id)+1),\n'
+               '           %s,\n'
+               '           %s,\n'
+               '           %s\n'
+               '    from infrastructure_parameter\n'
+               '    where infra_id=%s;'),
+     'result': None},
+    {'query': ('update application set\n'
+               '    name=%s,\n'
+               '    description=%s,\n'
+               '    outcome=%s,\n'
+               '    enabled=%s\n'
+               'where id=%s;'),
+     'result': None},
+    {'query': ('select file, path\n'
+               'from application_file\n'
+               'where app_id = %s\n'
+               '  and (path is not null or path != \'\');'),
+     'result': [['test', 'test/path'], ]},
+    {'query': ('insert into application_parameter\n'
+               '    (app_id,\n'
+               '     param_id,\n'
+               '     pname,\n'
+               '     pvalue,\n'
+               '     pdesc)\n'
+               '    select %s,\n'
+               '           if(max(param_id) is NULL,\n'
+               '              1,max(param_id)+1),\n'
+               '           %s,\n'
+               '           %s,\n'
+               '           %s\n'
+               '    from application_parameter\n'
+               '    where app_id=%s;'),
+     'result': None},
+    {'query': ('delete from application_file\n'
+               'where app_id=%s;'),
+     'result': None},
+    {'query': ('insert into application_file\n'
+               '    (app_id,\n'
+               '     file_id,\n'
+               '     file,\n'
+               '     path,\n'
+               '     override)\n'
+               '    select %s,\n'
+               '           if(max(file_id) is NULL,\n'
+               '              1,max(file_id)+1),\n'
+               '           %s,\n'
+               '           %s,\n'
+               '           TRUE\n'
+               '    from application_file\n'
+               '    where app_id=%s;'),
+     'result': None},
+    {'query': ('delete from application_parameter\n'
+               'where app_id=%s;'),
+     'result': None},
+    {'query': ('insert into application_parameter\n'
+               '    (app_id,\n'
+               '     param_id,\n'
+               '     pname,\n'
+               '     pvalue,\n'
+               '     pdesc)\n'
+               '    select %s,\n'
+               '           if(max(param_id) is NULL,\n'
+               '              1,max(param_id)+1),\n'
+               '           %s,\n'
+               '           %s,\n'
+               '           %s\n'
+               '    from application_parameter\n'
+               '    where app_id=%s;'),
+     'result': None},
+    {'query': ('select id from infrastructure where app_id=%s;'),
+     'result': [[1], ]},
+    {'query': ('select count(*)=1\n'
+               'from infrastructure\n'
+               'where app_id=0 and id=%s;'),
+     'result': [[1], ]},
+    {'query': ('update infrastructure\n'
+               'set app_id = %s\n'
+               'where id = %s and app_id = 0;'),
+     'result': None},
+    {'query': ('select count(*)=1\n'
+               'from infrastructure\n'
+               'where id=%s;'),
+     'result': [[1], ]},
+    {'query': ('update infrastructure\n'
+               'set app_id = 0\n'
+               'where id=%s\n'
+               '  and app_id=%s;'),
+     'result': None},
     {'query': None,
      'result': None},
 ]
@@ -672,17 +831,80 @@ class cursor:
     def __len__(self):
         return len(self.cursor_results)
 
+    def rank_query(self, q1, q2):
+        if q1 is None or q2 is None:
+            return 0
+        rank = 0
+        ccnt = 0
+        for c in q1:
+            if ccnt < len(q2) and ord(c) == ord(q2[ccnt]):
+                rank += 1
+            ccnt += 1
+        return rank
+
+    def hilight_diff(self, q1, q2, show=None):
+        if q1 is not None and q2 is not None:
+            dcnt = 0
+            scnt = 0
+            ccnt = 0
+            diff_report = ''
+            for c in q1:
+                if ccnt < len(q2):
+                    if ord(c) == ord(q2[ccnt]):
+                        if c == '\n':
+                            diff_report += "%3d \\n ok\n" % ccnt
+                        else:
+                            diff_report += "%3d %2s ok\n" % (ccnt, c)
+                        scnt += 1
+                    else:
+                        if c == '\n':
+                            c_str = '\\n'
+                        else:
+                            c_str = "%s" % c
+                        if q2[ccnt] == '\n':
+                            q2_str = '\\n'
+                        else:
+                            q2_str = "%s" % q2[ccnt]
+                        diff_report += ("%3d %2s ko - %2s\n"
+                                        % (ccnt, c_str, q2_str))
+                        dcnt += 1
+                else:
+                    dcnt += 1
+                ccnt += 1
+            if show is not None:
+                print "Hilighting differences:"
+                print diff_report
+                print "%4d characters are matching" % scnt
+                print "%4d characters are not matching" % dcnt
+        return scnt, dcnt
+
     def execute(self, sql, sql_data=None):
         print "Executing: '%s'" % sql
         self.position = 0
         self.cursor_results = None
+        rank_max = 0
+        rank_query = ''
+        query_found = False
         for query in queries:
-            if query['query'] == sql:
-                self.cursor_results = query['result']
-                print "Test query found!"
-                print "result: '%s'" % self.cursor_results
-        if self.cursor_results is None:
-            print "Test query not found!"
+            if query['query'] is not None:
+                rankq = self.rank_query(query['query'], sql)
+                if rank_max < rankq:
+                    rank_max = rankq
+                    rank_query = query['query']
+                if sql == query['query']:
+                    self.cursor_results = query['result']
+                    print "Test query found!"
+                    print "result: '%s'" % self.cursor_results
+                    query_found = True
+                    break
+        if query_found is not True:
+            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            print "!!! Test query not found !!!"
+            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            print "Closest query is:"
+            print "'%s'" % rank_query
+            print "whith score: %s" % rank_max
+            self.hilight_diff(sql, rank_query, True)
 
     def fetchone(self):
         if self.cursor_results is None:

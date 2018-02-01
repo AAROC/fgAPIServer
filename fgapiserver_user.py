@@ -18,6 +18,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from flask_login import UserMixin
+import logging
 
 """
   FutureGateway APIServer User class
@@ -25,7 +26,7 @@ from flask_login import UserMixin
 __author__ = "Riccardo Bruno"
 __copyright__ = "2015"
 __license__ = "Apache"
-__version__ = "v0.0.2-30-g37540b8-37540b8-37"
+__version__ = "v0.0.7-1"
 __maintainer__ = "Riccardo Bruno"
 __email__ = "riccardo.bruno@ct.infn.it"
 
@@ -35,13 +36,15 @@ class User(UserMixin):
     flask-login User Class
     """
 
+    log = None
     id = 0
     name = ''
 
     def __init__(self, id, name):
+        self.log = logging.getLogger(__name__)
         self.id = id
         self.name = name
-        print "id: '%s' - name: '%s'" % (id, name)
+        self.log.debug("fgUser - id: '%s' - name: '%s'" % (id, name))
 
     def get_id(self):
         """

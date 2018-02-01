@@ -29,9 +29,10 @@ from fgapiserver_user import User
 __author__ = "Riccardo Bruno"
 __copyright__ = "2015"
 __license__ = "Apache"
-__version__ = "v0.0.2-30-g37540b8-37540b8-37"
+__version__ = "v0.0.7-1"
 __maintainer__ = "Riccardo Bruno"
 __email__ = "riccardo.bruno@ct.infn.it"
+
 
 """
   fgapiserver_ptv - APIServer Portal Token Validator
@@ -62,14 +63,13 @@ class FGAPIServerPTV:
     portal_endpoint = ''
     portal_tv_user = ''
     portal_tv_pass = ''
-    portal_realm = ''
     portal_validate = False
     portal_user = ''
     portal_group = ''
     portal_groups = []
     portal_subject = None
-
     fgapiserver_db = None
+    log = None
 
     def __init__(self, *args, **kwargs):
         """
@@ -79,13 +79,19 @@ class FGAPIServerPTV:
             portal_tv_pass  - The portal token validator user password
 
         """
+        self.log = logging.getLogger(__name__)
         self.portal_endpoint = kwargs.get('endpoint', '')
         self.portal_tv_user = kwargs.get('tv_user', '')
         self.portal_tv_pass = kwargs.get('tv_password', '')
         self.fgapiserver_db = kwargs.get('fgapiserver_db', None)
-        self.portal_realm = base64.encodestring(
-            '%s:%s' % (self.portal_tv_user,
-                       self.portal_tv_pass)).replace('\n', '')
+
+        self.log.debug("Initializing PTV with:\n"
+                       "  Endpoint: '%s'\n"
+                       "  Username: '%s'\n"
+                       "  Password: '%s'\n"
+                       % (self.portal_endpoint,
+                          self.portal_tv_user,
+                          self.portal_tv_pass))
 
     def validate_token(self, token):
         """
@@ -105,28 +111,24 @@ class FGAPIServerPTV:
         }
         The return of user and group field is not mandatory for the portal.
         """
-        print "connection: '%s'" % self.portal_endpoint
-        # request = urllib2.Request(self.portal_endpoint)
-        # #request.add_header("Authorization", "Basic %s" % self.portal_realm)
-        # result = urllib2.urlopen(request)
-        # token_info = json.load(result)
-        # result.close()
+        self.log.debug("Validating token: '%s'", token)
+        self.log.debug("Connecting PTV service: '%s'" % self.portal_endpoint)
 
-        # post_data = {"token": token}
-        post_data = "token=%s" % token
-        # response = requests.post(self.portal_endpoint
-        #                         data=post_data,
-        #                         auth=requests.auth.HTTPBasicAuth(
-        #                             self.portal_tv_user,
-        #                             self.portal_tv_pass))
-        response = requests.post(self.portal_endpoint+"?"+post_data,
-                                 auth=requests.auth.HTTPBasicAuth(
-                                     self.portal_tv_user,
-                                     self.portal_tv_pass),
-                                 verify=False)
-        token_info = response.json()
-        response.close()
-        print token_info
+        token_info = {}
+        post_data = {'token': token}
+        try:
+            response = requests.post(self.portal_endpoint,
+                                     auth=requests.auth.HTTPBasicAuth(
+                                         self.portal_tv_user,
+                                         self.portal_tv_pass),
+                                     data=post_data
+                                     verify=False)
+            token_info = response.json()
+            response.close()
+            self.log.debug("Retrieved token info:\n"
+                           "%s" % token_info)
+        except:
+            self.log.error("Unable to get token info")
 
         # Now fill class values
         self.portal_validate = \
@@ -137,19 +139,13 @@ class FGAPIServerPTV:
         self.portal_groups = token_info.get('groups', [])
         self.portal_subject = token_info.get('subject', None)
 
-        return {
+        validated_token = {
             "portal_validate": self.portal_validate,
             "portal_user": self.portal_user,
             "portal_group": self.portal_group,
             "portal_groups": self.portal_groups,
             "portal_subject": self.portal_subject
         }
-
-    # def mapUser(self):
-    #     return User()
-    # The portal user has to be mapped from its name or group with an username
-    # registered inside the APIServer database. If no group or name are
-    # recognized a default user will be associated (guest)
-    # Once the user is recognized the incoming token will be registered as
-    # session token
-    # self.fgapiserver_db.registerToken(...)
+        self.log.debug("Validated token:\n"
+                       "%s" % validated_token)
+        return validated_token

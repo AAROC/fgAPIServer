@@ -10,7 +10,9 @@ a bash script file provided in the inputSandbox together with
 another text file containing just a message 'sayhello.txt'
 The application produces a file named 'sayhello.out' that will be 
 placed in the outputSandbox together with standard input and ouput
-files
+files.
+This demo provides the setup_app.sh file that can be customised to
+setup new applications on the FG.
 
 To execute the demo, please follow the steps below:
 

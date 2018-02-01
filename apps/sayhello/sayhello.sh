@@ -1,9 +1,14 @@
 #!/bin/bash
+#
+# sayhello.sh - Pilot script example
+#
+# Author: Riccardo Bruno <riccardo.bruno@ct.infn.it>
+#
 INPFILE=sayhello.txt
 DATAFILE=sayhello.data
 DELAY=2
 printf "starting at: " ; date
-printf "running on: "; $(hostname -f)
+printf "running on: "; hostname -f 
 printf "whoami: "; whoami
 printf "home: "; echo $HOME
 printf "listing home:\n"
@@ -11,10 +16,10 @@ ls -l $HOME
 printf "working directory: "; pwd
 printf "listing working directory:\n"
 ls -l $PWD
-if [ "${@}" = "" ]; then
+if [ "$*" = "" ]; then
   SAYS="nothing"
 else
-  SAYS="$@"
+  SAYS="$*"
 fi
 echo "User "$(whoami)" says: $SAYS" | tee -i $DATAFILE 
 if [ -f "$INPFILE" ]; then

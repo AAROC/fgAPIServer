@@ -88,8 +88,8 @@ create table application_file (
 );
 
 -- Files associated to application sayhello
-insert into application_file (app_id,file_id,file,path,override) values (2,1,'sayhello.sh' ,'/Users/Macbook/Documents/fgapiserver/apps/sayhello',false);
-insert into application_file (app_id,file_id,file,path,override) values (2,2,'sayhello.txt','/Users/Macbook/Documents/fgapiserver/apps/sayhello',false);
+insert into application_file (app_id,file_id,file,path,override) values (2,1,'sayhello.sh' ,'apps/sayhello',false);
+insert into application_file (app_id,file_id,file,path,override) values (2,2,'sayhello.txt','apps/sayhello',false);
 
 -- Infrastructure
 create table infrastructure (

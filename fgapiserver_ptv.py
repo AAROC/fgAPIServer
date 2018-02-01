@@ -36,7 +36,7 @@ import logging.config
 __author__ = "Riccardo Bruno"
 __copyright__ = "2015"
 __license__ = "Apache"
-__version__ = "v0.0.2-30-g37540b8-37540b8-37"
+__version__ = "v0.0.7-1"
 __maintainer__ = "Riccardo Bruno"
 __email__ = "riccardo.bruno@ct.infn.it"
 
@@ -48,44 +48,43 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 fgapiserver_config_file = fgapirundir + 'fgapiserver.conf'
 
 # Load configuration
-fg_config = FGApiServerConfig(fgapiserver_config_file)
+fg_config_obj = FGApiServerConfig(fgapiserver_config_file)
+fg_config = fg_config_obj.get_config()
 
 # fgapiserver settings
-fgapiver = fg_config.get_config_value('fgapiver')
-fgapiserver_name = fg_config.get_config_value('fgapiserver_name')
-fgapisrv_host = fg_config.get_config_value('fgapisrv_host')
-fgapisrv_port = int(fg_config.get_config_value('fgapisrv_port'))
-fgapisrv_debug = (fg_config.get_config_value(
-    'fgapisrv_debug').lower() == 'true')
-fgapisrv_iosandbox = fg_config.get_config_value('fgapisrv_iosandbox')
-fgapisrv_geappid = int(fg_config.get_config_value('fgapisrv_geappid'))
-fgjson_indent = int(fg_config.get_config_value('fgjson_indent'))
-fgapisrv_key = fg_config.get_config_value('fgapisrv_key')
-fgapisrv_crt = fg_config.get_config_value('fgapisrv_crt')
-fgapisrv_logcfg = fg_config.get_config_value('fgapisrv_logcfg')
-fgapisrv_dbver = fg_config.get_config_value('fgapisrv_dbver')
-fgapisrv_secret = fg_config.get_config_value('fgapisrv_secret')
-fgapisrv_notoken = (fg_config.get_config_value(
-    'fgapisrv_notoken').lower() == 'true')
-fgapisrv_notokenusr = fg_config.get_config_value('fgapisrv_notokenusr')
-fgapisrv_lnkptvflag = fg_config.get_config_value('fgapisrv_lnkptvflag')
-fgapisrv_ptvendpoint = fg_config.get_config_value('fgapisrv_ptvendpoint')
-fgapisrv_ptvuser = fg_config.get_config_value('fgapisrv_ptvuser')
-fgapisrv_ptvpass = fg_config.get_config_value('fgapisrv_ptvpass')
-fgapisrv_ptvdefusr = fg_config.get_config_value('fgapisrv_ptvdefusr')
-fgapisrv_ptvmapfile = fg_config.get_config_value('fgapisrv_ptvmapfile')
+fgapiver = fg_config['fgapiver']
+fgapiserver_name = fg_config['fgapiserver_name']
+fgapisrv_host = fg_config['fgapisrv_host']
+fgapisrv_port = int(fg_config['fgapisrv_port'])
+fgapisrv_debug = (fg_config['fgapisrv_debug'].lower() == 'true')
+fgapisrv_iosandbox = fg_config['fgapisrv_iosandbox']
+fgapisrv_geappid = fg_config['fgapisrv_geappid']
+fgjson_indent = int(fg_config['fgjson_indent'])
+fgapisrv_key = fg_config['fgapisrv_key']
+fgapisrv_crt = fg_config['fgapisrv_crt']
+fgapisrv_logcfg = fg_config['fgapisrv_logcfg']
+fgapisrv_dbver = fg_config['fgapisrv_dbver']
+fgapisrv_secret = fg_config['fgapisrv_secret']
+fgapisrv_notoken = (fg_config['fgapisrv_notoken'].lower() == 'true')
+fgapisrv_notokenusr = fg_config['fgapisrv_notokenusr']
+fgapisrv_lnkptvflag = fg_config['fgapisrv_lnkptvflag']
+fgapisrv_ptvendpoint = fg_config['fgapisrv_ptvendpoint']
+fgapisrv_ptvuser = fg_config['fgapisrv_ptvuser']
+fgapisrv_ptvpass = fg_config['fgapisrv_ptvpass']
+fgapisrv_ptvdefusr = fg_config['fgapisrv_ptvdefusr']
+fgapisrv_ptvmapfile = fg_config['fgapisrv_ptvmapfile']
 
 # fgapiserver database settings
-fgapisrv_db_host = fg_config.get_config_value('fgapisrv_db_host')
-fgapisrv_db_port = int(fg_config.get_config_value('fgapisrv_db_port'))
-fgapisrv_db_user = fg_config.get_config_value('fgapisrv_db_user')
-fgapisrv_db_pass = fg_config.get_config_value('fgapisrv_db_pass')
-fgapisrv_db_name = fg_config.get_config_value('fgapisrv_db_name')
+fgapisrv_db_host = fg_config['fgapisrv_db_host']
+fgapisrv_db_port = int(fg_config['fgapisrv_db_port'])
+fgapisrv_db_user = fg_config['fgapisrv_db_user']
+fgapisrv_db_pass = fg_config['fgapisrv_db_pass']
+fgapisrv_db_name = fg_config['fgapisrv_db_name']
 
 # Logging
 logging.config.fileConfig(fgapisrv_logcfg)
 logger = logging.getLogger(__name__)
-logger.debug(fg_config.show_conf())
+logger.debug(fg_config_obj.get_messages())
 
 # setup Flask app
 app = Flask(__name__)
@@ -121,6 +120,67 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+
+##
+# Test helper functions
+##
+
+token_file = '.iam/token'
+default_token = ("eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIzYTJkN"
+                 "BmNS0zYmRjLTQwMjAtODJjYi0xMDI4OTQzYzc3N2QiLCJpc3MiOiJodH"
+                 "wczpcL1wvaWFtLXRlc3QuaW5kaWdvLWRhdGFjbG91ZC5ldVwvIiwiZXh"
+                 "IjoxNDc2MjY3NjA2LCJpYXQiOjE0NzYyNjQwMDYsImp0aSI6IjRjN2Y5"
+                 "TczLWJmYzItNDEzYy1hNzhjLWUxZmJlMGU2NjAwYSJ9.BfDlr6Far_oe"
+                 "7z-SuLPbXgfKx3VuHJ0iuL-Dyd6G5_7_rNPrvZr5Da_HJUfonOLr8uOo"
+                 "UhMUIP_Xiw4ZuWVIIhNPDSdu4lhWy5kkcoQ3rI9myNT2WxLA3IP2ZEwP"
+                 "InefF0LzAlMj4-iQQw-kAavKgvA00sO8cww9Hzx6Thfw")
+
+
+def get_token_file(token_file):
+    """This function returns the token stored in the given token_file"""
+    token = default_token
+    try:
+        tkn_f = open(token_file, 'rt')
+        token = tkn_f.read()[:-1]
+        tkn_f.close()
+    except IOError:
+        print ("Token file '%s' could not be accessed; using default"
+               % token_file)
+    return token
+
+subject_file = '.iam/subject'
+default_subject = '98e3009e-e39b-11e6-bcba-5eef910c8578'
+
+
+def get_subject_file(subject_file):
+    """This function returns the subject stored in the given subject_file"""
+    subject = default_subject
+    try:
+        sbj_f = open(subject_file)
+        subject = sbj_f.read()[:-1]
+        sbj_f.close()
+    except IOError:
+        print ("Subject file '%s' could not be accessed; using default"
+               % subject_file)
+    return subject
+
+groups_file = '.iam/groups'
+default_groups = ['Admin',
+                  'Developers']
+
+
+def get_groups_file(groups_file):
+    """This function returns the groups stored in the fiven groups file"""
+    groups = default_groups
+    try:
+        grp_f = open(groups_file)
+        groups = [grp[:-1] for grp in grp_f]
+        grp_f.close()
+    except IOError:
+        print ("Groups file '%s' could not be accessed; using default"
+               % grous_file)
+    return groups
+
 ##
 # PTV handlers
 ##
@@ -152,16 +212,9 @@ def get_token():
     elif request.method == 'POST':
         response = {
             "error": None,
-            "groups": None,
+            "groups": get_groups_file(groups_file),
             "subject": subject,
-            "token": "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIzYTJkN"
-                     "BmNS0zYmRjLTQwMjAtODJjYi0xMDI4OTQzYzc3N2QiLCJpc3MiOiJodH"
-                     "wczpcL1wvaWFtLXRlc3QuaW5kaWdvLWRhdGFjbG91ZC5ldVwvIiwiZXh"
-                     "IjoxNDc2MjY3NjA2LCJpYXQiOjE0NzYyNjQwMDYsImp0aSI6IjRjN2Y5"
-                     "TczLWJmYzItNDEzYy1hNzhjLWUxZmJlMGU2NjAwYSJ9.BfDlr6Far_oe"
-                     "7z-SuLPbXgfKx3VuHJ0iuL-Dyd6G5_7_rNPrvZr5Da_HJUfonOLr8uOo"
-                     "UhMUIP_Xiw4ZuWVIIhNPDSdu4lhWy5kkcoQ3rI9myNT2WxLA3IP2ZEwP"
-                     "InefF0LzAlMj4-iQQw-kAavKgvA00sO8cww9Hzx6Thfw"
+            "token": get_token_file(token_file)
         }
         ctk_status = 200
     else:
@@ -212,12 +265,8 @@ def checktoken():
         # }
         response = {
             "error": None,
-            "groups": [
-                "Users",
-                "Developers"
-            ],
-            # "subject": "a9f37548-4024-4330-88bf-4f43067e6bdb"
-            "subject": "98e3009e-e39b-11e6-bcba-5eef910c8578"
+            "groups": get_groups_file(groups_file),
+            "subject": get_subject_file(subject_file)
         }
         ctk_status = 200
     else:
